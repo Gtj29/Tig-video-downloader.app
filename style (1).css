@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(-45deg, #1e1e3f, #3a3a8a, #7a7ad9, #f094c0);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    overflow: hidden;
+    position: relative;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    animation: float 20s infinite;
+}
+
+.particle:nth-child(1) { width: 60px; height: 60px; top: 10%; left: 5%; animation-duration: 15s; }
+.particle:nth-child(2) { width: 20px; height: 20px; top: 20%; left: 80%; animation-duration: 18s; }
+.particle:nth-child(3) { width: 80px; height: 80px; top: 70%; left: 15%; animation-duration: 22s; }
+.particle:nth-child(4) { width: 40px; height: 40px; top: 80%; left: 90%; animation-duration: 12s; }
+.particle:nth-child(5) { width: 30px; height: 30px; top: 40%; left: 50%; animation-duration: 25s; }
+.particle:nth-child(6) { width: 50px; height: 50px; top: 50%; left: 25%; animation-duration: 16s; }
+
+@keyframes float {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+}
+
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    z-index: 1;
+}
+
+h1 {
+    color: white;
+    margin-bottom: 2rem;
+    font-weight: 600;
+}
+
+.input-container {
+    display: flex;
+    margin-bottom: 1.5rem;
+}
+
+#video-url {
+    flex-grow: 1;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    background: rgba(255, 255, 255, 0.8);
+    font-family: 'Poppins', sans-serif;
+}
+
+#download-btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    background: #f094c0;
+    color: white;
+    border-radius: 0 10px 10px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+#download-btn:hover {
+    background: #e083b0;
+}
+
+#download-btn svg {
+    transition: transform 0.3s ease;
+}
+
+#download-btn:hover svg {
+    transform: translateY(2px);
+}
+
+.quality-selection {
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.download-history {
+    margin-top: 2rem;
+    text-align: left;
+}
+
+h2 {
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    padding-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+#history-list {
+    list-style: none;
+    padding: 0;
+    color: white;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+#history-list li {
+    margin-bottom: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: 5px;
+}
