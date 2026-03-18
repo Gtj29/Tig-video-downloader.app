@@ -51,38 +51,36 @@ class VideoGenerator:
         background = ColorClip(size=(int(width), int(height)), color=(20, 20, 40), duration=duration)
 
         # Subtitles
-        words = script.split()
-        lines = []
-        current_line = ""
-        for word in words:
-            if len(current_line + " " + word) < 15:
-                current_line += " " + word
-            else:
-                lines.append(current_line.strip())
-                current_line = word
-        lines.append(current_line.strip())
+        import textwrap
+        wrapped_text = textwrap.fill(script, width=20)
 
         clips = [background]
 
-        # Instead of one big TextClip, maybe multiple smaller ones or just one that works
-        # Let's try to fix the TextClip by specifying a full size
         try:
-            # MoviePy 2.x might need specific parameters
             txt_clip = TextClip(
-                text="\n".join(lines),
+                text=wrapped_text,
                 font_size=60,
                 color='yellow',
-                # method='caption' is often where it fails if size is weird
-                size=(int(width * 0.9), int(height * 0.6)),
-                duration=duration
+                size=(int(width * 0.9), int(height * 0.8)),
+                duration=duration,
+                method='caption',
+                align='center'
             ).with_position('center')
             clips.append(txt_clip)
         except Exception as e:
-            print(f"TextClip error: {e}")
-            # Even more basic fallback: just show the text as several ColorClips for now?
-            # No, let's try to fix the TextClip call.
-            # Some versions of moviepy/PIL have issues with None in size.
-            pass
+            import logging
+            logging.error(f"TextClip error: {e}. Falling back to simple message.")
+            # Fallback if ImageMagick is not configured or fails
+            try:
+                fallback_txt = TextClip(
+                    text="Error generating subtitles",
+                    font_size=30,
+                    color='red',
+                    duration=duration
+                ).with_position('center')
+                clips.append(fallback_txt)
+            except:
+                pass
 
         # Add background music if exists
         # For now, we'll skip music until we have a file, or create a dummy beep?
