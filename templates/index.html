@@ -1,41 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIG Video Downloader</title>
+    <title>AI Knowledge Video Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .loading { display: none; color: blue; }
+        video { max-width: 100%; display: none; margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <!-- Background Particles -->
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-
     <div class="container">
-        <h1>TIG Video Downloader</h1>
-        <div class="input-container">
-            <input type="text" id="video-url" placeholder="Enter video URL">
-            <button id="download-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                <span>Download</span>
+        <h1>AI Knowledge Video Generator</h1>
+
+        <div class="section">
+            <h2>Mode Generator</h2>
+            <div>
+                <button onclick="setMode('random')">Random Knowledge</button>
+                <button onclick="setMode('topic')">Berdasarkan Topik</button>
+                <button onclick="setMode('text')">Berdasarkan Teks</button>
+            </div>
+
+            <div id="topic-input" style="display:none; margin-top:10px;">
+                <input type="text" id="topic" placeholder="Masukkan topik (misal: Antariksa)">
+            </div>
+
+            <div id="text-input" style="display:none; margin-top:10px;">
+                <textarea id="text" placeholder="Masukkan teks pengetahuan panjang..." rows="5" style="width:100%"></textarea>
+            </div>
+
+            <button id="generate-btn" style="margin-top:20px; padding:10px 20px; background-color: #28a745; color: white; border: none; cursor: pointer;">
+                Buat Video Sekarang
             </button>
+
+            <div id="loading" class="loading">Sedang memproses video... Mohon tunggu.</div>
         </div>
-        <div class="quality-selection">
-            <label for="quality">Select quality:</label>
-            <select id="quality">
-                <option value="best">Best</option>
-                <option value="worst">Worst</option>
-            </select>
+
+        <div id="result" class="section" style="display:none;">
+            <h2>Hasil Video</h2>
+            <p id="script-preview"></p>
+            <video id="output-video" controls>
+                Your browser does not support the video tag.
+            </video>
+            <br>
+            <a id="download-link" href="#" download>Download Video</a>
         </div>
-        <div class="download-history">
-            <h2>Download History</h2>
-            <ul id="history-list"></ul>
+
+        <hr>
+        <div class="section">
+            <h2>TIG Video Downloader (Legacy)</h2>
+            <div class="input-container">
+                <input type="text" id="video-url" placeholder="Enter video URL">
+                <button id="download-btn">Download</button>
+            </div>
+            <div class="quality-selection">
+                <select id="quality">
+                    <option value="best">Best</option>
+                    <option value="worst">Worst</option>
+                </select>
+            </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <script>
+        let currentMode = 'random';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('topic-input').style.display = mode === 'topic' ? 'block' : 'none';
+            document.getElementById('text-input').style.display = mode === 'text' ? 'block' : 'none';
+        }
+
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const topic = document.getElementById('topic').value;
+            const text = document.getElementById('text').value;
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const video = document.getElementById('output-video');
+            const scriptPreview = document.getElementById('script-preview');
+            const downloadLink = document.getElementById('download-link');
+
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            video.style.display = 'none';
+
+            try {
+                const response = await fetch('/generate-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: currentMode, topic, text })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    scriptPreview.innerText = "Script: " + data.script;
+                    video.src = data.video_url;
+                    video.style.display = 'block';
+                    downloadLink.href = data.video_url;
+                    result.style.display = 'block';
+                } else {
+                    alert('Gagal: ' + data.error);
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan: ' + err);
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        // Legacy Downloader JS
+        document.getElementById('download-btn').addEventListener('click', async () => {
+            const url = document.getElementById('video-url').value;
+            const quality = document.getElementById('quality').value;
+            if (!url) return alert('URL required');
+
+            const response = await fetch('/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, quality })
+            });
+            const data = await response.json();
+            if (data.download_url) {
+                window.open(data.download_url, '_blank');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    </script>
 </body>
 </html>

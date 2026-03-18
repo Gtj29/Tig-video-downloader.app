@@ -1,11 +1,17 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import yt_dlp
 import logging
+import os
+from utils.video_gen import VideoGenerator
+from flask_cors import CORS
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
+CORS(app)
+
+vg = VideoGenerator()
 
 @app.route('/')
 def index():
@@ -39,5 +45,35 @@ def download():
         logging.exception(f"An error occurred while processing URL {video_url}: {e}")
         return jsonify({'error': 'An unexpected error occurred. Please check the URL or try again later.'}), 500
 
+@app.route('/generate-video', methods=['POST'])
+def generate_video():
+    data = request.get_json()
+    topic = data.get('topic')
+    text = data.get('text')
+    mode = data.get('mode', 'random') # 'random', 'topic', 'text'
+
+    try:
+        if mode == 'text' and text:
+            script = text
+        else:
+            script = vg.generate_script(topic if mode == 'topic' else None)
+
+        filename = f"video_{os.urandom(4).hex()}.mp4"
+        vo_path = vg.text_to_speech(script, filename=f"vo_{filename}.mp3")
+        video_path = vg.create_video(script, vo_path, output_filename=filename)
+
+        return jsonify({
+            'success': True,
+            'video_url': f"/output/{filename}",
+            'script': script
+        })
+    except Exception as e:
+        logging.exception(f"Video generation failed: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/output/<path:filename>')
+def serve_video(filename):
+    return send_from_directory('output', filename)
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
